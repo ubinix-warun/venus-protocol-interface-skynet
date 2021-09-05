@@ -1,0 +1,27 @@
+name: Deploy to Skynet
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+
+      - run: npm install
+      - run: npm run build
+      - run: cp .htaccess build/.htaccess
+      - run: cp manifest.json build/manifest.json
+
+      - name: "Deploy to Skynet"
+        uses: SkynetLabs/deploy-to-skynet-action@resolver-skylink
+        with:
+          upload-dir: build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          registry-seed: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.SKYNET_REGISTRY_SEED || '' }}
