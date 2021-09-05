@@ -8,6 +8,14 @@
 https://3002hnl7j9jf38qn3t5s16mlst4io3pnkplh0528g1old5vorq4ih5o.siasky.net/
 ```
 
+## Hackathon: Open DeFi Hackathon
+Host Your Hack's Front-End On Skynet
+
+1. [x] adding a working "Save to Homescreen" link in the Github repo (example) | 3 shares
+2. [ ] using an ENS or HNS decentralized domain name for the web app | 1 share
+3. [ ] use the Deploy to Skynet Github action for building and deploying your frontend automatically | 1 share
+4. [ ] hosting off-chain, mutable application data on Skynet using SkyDB or MySky | 1 share
+
 ## Quick Installation & Start
 
 ```sh
