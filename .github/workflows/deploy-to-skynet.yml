@@ -16,8 +16,7 @@ jobs:
 
       - run: npm install
 
-      - run: echo "CI=" > .env
-      - run: echo "NODE_PATH=src/" >> .env
+      - run: echo "NODE_PATH=src/" > .env
       - run: echo "REACT_APP_DEVELOPMENT_API=" >> .env
       - run: echo "REACT_APP_PRODUCTION_API=https://api.venus.io/api" >> .env
       - run: echo "REACT_APP_TEST_VAI_TOKEN_ADDRESS=0x5fFbE5302BadED40941A403228E6AD03f93752d9" >> .env
@@ -37,7 +36,7 @@ jobs:
       - run: echo "REACT_APP_ENV=prod" >> .env
       - run: echo "PORT=3001" >> .env
 
-      - run: npm run build
+      - run: CI=false npm run build
       - run: cp .htaccess build/.htaccess
       - run: cp manifest.json build/manifest.json
 
