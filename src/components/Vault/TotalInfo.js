@@ -15,23 +15,19 @@ const TotalInfoWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 20px 40px;
-
   @media (max-width: 992px) {
     padding: 20px;
     flex-direction: column;
   }
-
   .total-item {
     @media (max-width: 992px) {
       margin: 10px;
     }
-
     .prop {
       font-weight: 600;
       font-size: 20px;
       color: var(--color-text-secondary);
     }
-
     .value {
       font-weight: 600;
       font-size: 24px;

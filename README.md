@@ -51,12 +51,13 @@ venus-protocol-ui
 ├── README.md
 ```
 
-## Quick Deployment
+## Deployment
 
-```sh
-npm install
-npm run build
-```
+To deploy, raise a PR to update image and config at: https://github.com/VenusProtocol/venus-k8s-app
+
+## Local Development
+
+To run dev environment:
 
 manual siasky
 ```
@@ -69,10 +70,11 @@ cp manifest.json build/manifest.json
 
 testnet server deploy
 ```
-pm2 deploy testnet
+docker compose up venus-ui-dev
 ```
 
-production server deploy
+To run prod environment:
+
 ```
-pm2 deploy prod
+docker compose build && docker compose up venus-ui-prod
 ```

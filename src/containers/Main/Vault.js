@@ -6,22 +6,24 @@ import { compose } from 'recompose';
 import { withRouter } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
 import BigNumber from 'bignumber.js';
-import * as constants from 'utilities/constants';
 import MainLayout from 'containers/Layout/MainLayout';
+import VaiTotalInfo from 'components/Vault/VAI/TotalInfo';
+import VaiStaking from 'components/Vault/VAI/Staking';
+import XVSVault from 'components/Vault/XVS';
 import TotalInfo from 'components/Vault/TotalInfo';
 import UserInfo from 'components/Vault/UserInfo';
 import Staking from 'components/Vault/Staking';
 import { connectAccount, accountActionCreators } from 'core';
-import {
-  getVaiTokenContract,
-  getComptrollerContract,
-  getVaiVaultContract,
-  getTokenContract,
-  methods
-} from 'utilities/ContractService';
-import { checkIsValidNetwork } from 'utilities/common';
-import LoadingSpinner from 'components/Basic/LoadingSpinner';
 import { Row, Column } from 'components/Basic/Style';
+import { useWeb3React } from '@web3-react/core';
+import useRefresh from '../../hooks/useRefresh';
+import {
+  useComptroller,
+  useToken,
+  useVaiToken,
+  useVaiVault
+} from '../../hooks/useContract';
+import { getVaiVaultAddress } from '../../utilities/addressHelpers';
 
 const MarketWrapper = styled.div`
   width: 100%;
@@ -38,15 +40,6 @@ const VaultWrapper = styled.div`
   max-width: 1200px;
 `;
 
-const SpinnerWrapper = styled.div`
-  height: 80vh;
-  width: 100%;
-
-  @media only screen and (max-width: 1440px) {
-    height: 70vh;
-  }
-`;
-
 function Vault({ settings }) {
   const [emission, setEmission] = useState('0');
   const [pendingRewards, setPendingRewards] = useState('0');
@@ -54,35 +47,38 @@ function Vault({ settings }) {
   const [vaiStaked, setVaiStaked] = useState(new BigNumber(0));
   const [vaiReward, setVaiReward] = useState('0');
   const [isEnabled, setIsEnabled] = useState(false);
+  const [xvsBalance, setXVSBalance] = useState('');
+  const { account } = useWeb3React();
+  const { fastRefresh } = useRefresh();
+  const compContract = useComptroller();
+  const xvsTokenContract = useToken('xvs');
+  const tokenContract = useVaiToken();
+  const vaultContract = useVaiVault();
 
   const updateTotalInfo = async () => {
-    const compContract = getComptrollerContract();
-    const xvsTokenContract = getTokenContract('xvs');
-    const tokenContract = getVaiTokenContract();
-    const vaultContract = getVaiVaultContract();
-
     const [
       venusVAIVaultRate,
-      pendingRewards,
+      pendingRewardsTemp,
+      userXvsBalance,
       availableAmount,
       { 0: staked },
-      vaiReward,
+      vaiRewardTemp,
       allowBalance
     ] = await Promise.all([
-      methods.call(compContract.methods.venusVAIVaultRate, []),
-      methods.call(xvsTokenContract.methods.balanceOf, [
-        constants.CONTRACT_VAI_VAULT_ADDRESS
-      ]),
-      methods.call(tokenContract.methods.balanceOf, [settings.selectedAddress]),
-      methods.call(vaultContract.methods.userInfo, [settings.selectedAddress]),
-      methods.call(vaultContract.methods.pendingXVS, [
-        settings.selectedAddress
-      ]),
-      methods.call(tokenContract.methods.allowance, [
-        settings.selectedAddress,
-        constants.CONTRACT_VAI_VAULT_ADDRESS
-      ])
+      compContract.methods.venusVAIVaultRate().call(),
+      xvsTokenContract.methods.balanceOf(getVaiVaultAddress()).call(),
+      xvsTokenContract.methods.balanceOf(account).call(),
+      tokenContract.methods.balanceOf(account).call(),
+      vaultContract.methods.userInfo(account).call(),
+      vaultContract.methods.pendingXVS(account).call(),
+      tokenContract.methods.allowance(account, getVaiVaultAddress()).call()
     ]);
+    setXVSBalance(
+      new BigNumber(userXvsBalance)
+        .div(1e18)
+        .dp(4, 1)
+        .toString(10)
+    );
 
     // total info
     setEmission(
@@ -93,7 +89,7 @@ function Vault({ settings }) {
         .toString(10)
     );
     setPendingRewards(
-      new BigNumber(pendingRewards)
+      new BigNumber(pendingRewardsTemp)
         .div(1e18)
         .dp(4, 1)
         .toString(10)
@@ -101,7 +97,7 @@ function Vault({ settings }) {
     setAvailableVai(new BigNumber(availableAmount).div(1e18));
     setVaiStaked(new BigNumber(staked).div(1e18));
     setVaiReward(
-      new BigNumber(vaiReward)
+      new BigNumber(vaiRewardTemp)
         .div(1e18)
         .dp(4, 1)
         .toString(10)
@@ -110,19 +106,38 @@ function Vault({ settings }) {
   };
 
   useEffect(() => {
-    if (checkIsValidNetwork(settings.walletType)) {
+    if (account) {
       updateTotalInfo();
     }
-  }, [settings.markets]);
+  }, [fastRefresh, account]);
 
   return (
     <MainLayout title="Vault">
       <MarketWrapper>
         <VaultWrapper className="flex">
-          {!settings.selectedAddress ? (
-            <SpinnerWrapper>
-              <LoadingSpinner />
-            </SpinnerWrapper>
+          {process.env.REACT_APP_CHAIN_ID === '97' ? (
+            <Row>
+              <Column xs="12" sm="6">
+                <Column xs="12">
+                  <VaiTotalInfo
+                    emission={emission}
+                    pendingRewards={pendingRewards}
+                  />
+                </Column>
+                <Column xs="12">
+                  <VaiStaking
+                    isEnabled={isEnabled}
+                    availableVai={availableVai}
+                    vaiStaked={vaiStaked}
+                    vaiReward={vaiReward}
+                    xvsBalance={xvsBalance}
+                  />
+                </Column>
+              </Column>
+              <Column xs="12" sm="6">
+                <XVSVault />
+              </Column>
+            </Row>
           ) : (
             <Row>
               <Column xs="12">
@@ -145,7 +160,6 @@ function Vault({ settings }) {
                       isEnabled={isEnabled}
                       availableVai={availableVai}
                       vaiStaked={vaiStaked}
-                      updateTotalInfo={updateTotalInfo}
                     />
                   </Column>
                 </Row>
