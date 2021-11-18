@@ -7,6 +7,7 @@ import { connectAccount } from 'core';
 import commaNumber from 'comma-number';
 import coinImg from 'assets/img/venus_32.png';
 import { Card } from 'components/Basic/Card';
+import { BASE_BSC_SCAN_URL } from '../../config';
 
 const CardWrapper = styled.div`
   width: 100%;
@@ -48,10 +49,7 @@ const format = commaNumber.bindWith(',', '.');
 
 function CoinInfo({ address, balance }) {
   const handleLink = () => {
-    window.open(
-      `${process.env.REACT_APP_BSC_EXPLORER}/address/${address}`,
-      '_blank'
-    );
+    window.open(`${BASE_BSC_SCAN_URL}/address/${address}`, '_blank');
   };
 
   return (
@@ -61,20 +59,24 @@ function CoinInfo({ address, balance }) {
           <img src={coinImg} alt="coin" />
           <p>{format(balance)}</p>
         </div>
-        <div
-          className="flex align-center just-center pointer"
-          onClick={() => handleLink()}
-        >
-          <p className="highlight">
-            {`${address.substr(0, 4)}...${address.substr(
-              address.length - 4,
-              4
-            )}`}
-          </p>
-          <div className="flex align-center just-center copy-btn">
-            <Icon type="arrow-right" />
+        {address ? (
+          <div
+            className="flex align-center just-center pointer"
+            onClick={() => handleLink()}
+          >
+            <p className="highlight">
+              {`${address.substr(0, 4)}...${address.substr(
+                address.length - 4,
+                4
+              )}`}
+            </p>
+            <div className="flex align-center just-center copy-btn">
+              <Icon type="arrow-right" />
+            </div>
           </div>
-        </div>
+        ) : (
+          ''
+        )}
       </CardWrapper>
     </Card>
   );
