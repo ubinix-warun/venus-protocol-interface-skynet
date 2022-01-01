@@ -7,7 +7,7 @@ import arrowRightImg from 'assets/img/arrow-right.png';
 import closeImg from 'assets/img/close.png';
 import DelegationVoting from './DelegationVoting';
 import ManualVoting from './ManualVoting';
-import { useToken } from '../../hooks/useContract';
+import { useXvsVaultProxy } from '../../hooks/useContract';
 
 const ModalContent = styled.div`
   border-radius: 20px;
@@ -81,12 +81,12 @@ function DelegationTypeModal({
 }) {
   const [child, setChild] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const xvsContract = useToken('xvs');
+  const xvsVaultProxyContract = useXvsVaultProxy();
 
-  const handleVoting = async dAddress => {
+  const handleDelegateVoting = async dAddress => {
     setIsLoading(true);
     try {
-      await xvsContract.methods
+      await xvsVaultProxyContract.methods
         .delegate(dAddress || address)
         .send({ from: address });
       onCancel();
@@ -98,7 +98,7 @@ function DelegationTypeModal({
 
   return (
     <Modal
-      className="connect-modal"
+      className="venus-modal"
       width={400}
       visible={visible}
       onCancel={onCancel}
@@ -133,7 +133,7 @@ function DelegationTypeModal({
                 return;
               }
               setChild('manual');
-              handleVoting('');
+              handleDelegateVoting('');
             }}
           >
             <div className="flex align-center just-between">
@@ -170,14 +170,17 @@ function DelegationTypeModal({
               )}
             </div>
             <div className="description">
-              This option allows you to delegate your votes to another Ethereum
-              address. You never send Venus, only your voting rights, and can
-              undelegate at any time.
+              This Option allows you to delegate your votes to another trusted
+              BSC address. You are not sending your XVS Tokens, you are only
+              passing your voting power and you can undelegate at any time.
             </div>
           </div>
         </div>
         {child === 'delegate' && (
-          <DelegationVoting isLoading={isLoading} onDelegate={handleVoting} />
+          <DelegationVoting
+            isLoading={isLoading}
+            onDelegate={handleDelegateVoting}
+          />
         )}
         {child === 'manual' && (
           <ManualVoting

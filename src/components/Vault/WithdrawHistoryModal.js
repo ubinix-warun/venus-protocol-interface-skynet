@@ -68,7 +68,7 @@ function WithdrawHistoryModal({
   );
   return (
     <Modal
-      className="connect-modal"
+      className="venus-modal"
       width={448}
       visible={visible}
       onCancel={onCancel}
@@ -112,7 +112,7 @@ function WithdrawHistoryModal({
                   <span className="right">
                     {moment(
                       new Date(withdraw.lockedUntil.toNumber(10) * 1000)
-                    ).format('DD/MM/YYYY hh:mm:ss')}{' '}
+                    ).format('DD/MM/YYYY HH:mm:ss')}{' '}
                   </span>
                 </div>
               );
